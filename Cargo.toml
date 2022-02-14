@@ -1,0 +1,9 @@
+[package]
+name = "resources-usage"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+procinfo = "0.4.2"
+sysinfo = "0.23.1"
