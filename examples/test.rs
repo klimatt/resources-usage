@@ -1,9 +1,10 @@
 use resources_usage;
 
 fn main() -> std::io::Result<()> {
-    let mut r_use = resources_usage::RUsage::new(None);
-    r_use.calculate();
-    println!("{:?}", r_use.stat);
+
+    let mut watcher = resources_usage::Watcher::new(Some(653));
+    watcher.look();
+    watcher.pretty_print();
 
     Ok(())
 }
