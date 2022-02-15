@@ -8,7 +8,9 @@ pub struct Memory{
     available: usize,
     used: usize,
     process_vm: usize,
-    process_rss: usize
+    process_vm_peak: usize,
+    process_rss: usize,
+    process_hwm: usize
 }
 
 pub struct Watcher{
@@ -35,7 +37,9 @@ impl Watcher {
                 available: 0,
                 used: 0,
                 process_vm: 0,
-                process_rss: 0
+                process_vm_peak: 0,
+                process_rss: 0,
+                process_hwm: 0
             },
             name: "".to_string(),
             n_threads: 0
@@ -49,12 +53,16 @@ impl Watcher {
         self.memory.used = (mem.mem_total - mem.mem_free - mem.buffers - mem.cached - mem.s_reclaimable.unwrap_or(0)) as usize/ 1048576;
         self.memory.available = mem.mem_available.unwrap_or(0) as usize / 1048576;
 
-        match self.proc.stat() {
-            Ok(stat) => {
-                self.memory.process_vm = stat.vsize as usize;
-                self.memory.process_rss = stat.rss as usize;
-                self.name = stat.comm;
-                self.n_threads = stat.num_threads as usize;
+
+        match self.proc.status() {
+            Ok(status) => {
+                self.memory.process_vm = status.vmsize.unwrap_or(0) as usize;
+                self.memory.process_rss = status.vmrss.unwrap_or(0) as usize;
+                self.memory.process_vm_peak = status.vmpeak.unwrap_or(0) as usize;
+                self.memory.process_hwm = status.vmhwm.unwrap_or(0) as usize;
+
+                self.name = status.name;
+                self.n_threads = status.threads as usize;
             }
             Err(_) => {}
         }
@@ -62,14 +70,16 @@ impl Watcher {
 
     pub fn pretty_print(&self) {
         println!("==========Resources usage output:==============");
-        println!("Name:       {}", self.name);
-        println!("Proc_VM:    {} [KiB]",  self.memory.process_vm / 1024);
-        println!("Proc_RSS:   {} [pages]", self.memory.process_rss);
-        println!("Mem_total:  {} [MiB]", self.memory.total);
-        println!("Mem_used:   {} [MiB]", self.memory.used);
-        println!("Mem_free:   {} [MiB]", self.memory.free);
-        println!("Mem_avail:  {} [MiB]", self.memory.available);
-        println!("Threads_N:  {}", self.n_threads);
+        println!("Name:         {}", self.name);
+        println!("Proc_VM:      {} [KiB]", self.memory.process_vm);
+        println!("Proc_VM_PEAK: {} [KiB]", self.memory.process_vm_peak);
+        println!("Proc_RSS:     {} [KiB]", self.memory.process_rss);
+        println!("Proc_HWM:     {} [KiB]", self.memory.process_hwm);
+        println!("Mem_total:    {} [MiB]", self.memory.total);
+        println!("Mem_used:     {} [MiB]", self.memory.used);
+        println!("Mem_free:     {} [MiB]", self.memory.free);
+        println!("Mem_avail:    {} [MiB]", self.memory.available);
+        println!("Threads_N:    {}", self.n_threads);
         println!("===============================================");
     }
 }
