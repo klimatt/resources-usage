@@ -50,7 +50,7 @@ impl Watcher {
         let mem = procfs::Meminfo::new().expect("Unable to load mem_info");
         self.memory.total = mem.mem_total as usize / 1048576;
         self.memory.free  = mem.mem_free as usize / 1048576;
-        self.memory.used = (mem.mem_total - mem.mem_free - mem.buffers - mem.cached - mem.s_reclaimable.unwrap_or(0)) as usize/ 1048576;
+        self.memory.used = (mem.mem_total - mem.mem_free - mem.cached - mem.buffers - mem.s_reclaimable.unwrap_or(0)  + mem.shmem.unwrap_or(0)) as usize/ 1048576;
         self.memory.available = mem.mem_available.unwrap_or(0) as usize / 1048576;
 
 
