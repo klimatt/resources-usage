@@ -19,6 +19,7 @@ pub struct Watcher{
 
     memory: Memory,
     name: String,
+    state: String,
     n_threads: usize
 }
 
@@ -42,6 +43,7 @@ impl Watcher {
                 process_hwm: 0
             },
             name: "".to_string(),
+            state: "".to_string(),
             n_threads: 0
         }
     }
@@ -60,7 +62,8 @@ impl Watcher {
                 self.memory.process_rss = status.vmrss.unwrap_or(0) as usize;
                 self.memory.process_vm_peak = status.vmpeak.unwrap_or(0) as usize;
                 self.memory.process_hwm = status.vmhwm.unwrap_or(0) as usize;
-
+                
+                self.state = status.state;
                 self.name = status.name;
                 self.n_threads = status.threads as usize;
             }
@@ -71,6 +74,7 @@ impl Watcher {
     pub fn pretty_print(&self) {
         println!("==========Resources usage output:==============");
         println!("Name:         {}", self.name);
+        println!("State:        {}", self.state);
         println!("Proc_VM:      {} [KiB]", self.memory.process_vm);
         println!("Proc_VM_PEAK: {} [KiB]", self.memory.process_vm_peak);
         println!("Proc_RSS:     {} [KiB]", self.memory.process_rss);
